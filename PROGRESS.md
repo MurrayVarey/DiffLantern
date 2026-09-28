@@ -12,7 +12,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | Step | Name | Status | PR |
 |---|---|---|---|
 | 0.1 | Rename repo; update local remote | ✅ | |
-| 0.2 | Install Rust toolchain on Windows and Linux | ✅ | |
+| 0.2 | Install Rust toolchain on Windows | ✅ | |
 | 0.3 | Add README.md, SPEC.md, CLAUDE.md, PROGRESS.md | ✅ | |
 | 0.4 | Ruleset on `main` and CODEOWNERS | ✅ | |
 
