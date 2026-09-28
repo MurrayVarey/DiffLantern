@@ -5,7 +5,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 **Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step
 
-**Next step:** 0.1
+**Next step:** 1.2
 
 ## Phase 0: Setup (owner)
 
@@ -20,7 +20,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 | Step | Name | Status | PR |
 |---|---|---|---|
-| 1.1 | Cargo workspace (core library + CLI) with one trivial test | ⬜ | |
+| 1.1 | Cargo workspace (core library + CLI) with one trivial test | ✅ | |
 | 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ⬜ | |
 | 1.3 | Mutation testing in CI | ⬜ | |
 | 1.4 | Red-then-green commit check in CI | ⬜ | |
@@ -71,6 +71,17 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.1 — Cargo workspace (2026-09-28)
+- Decisions:
+  - Crates live under `crates/` (`difflantern-core` library, `difflantern` CLI); root `Cargo.toml` is a virtual workspace with `members = ["crates/*"]`, resolver 3, edition 2024, version/edition/license shared via `[workspace.package]`.
+  - Core code is tested inside `difflantern-core`. cargo-mutants only runs the mutated crate's own tests by default, so a core function tested only from the CLI crate shows as MISSED. We chose this over `test_workspace = true` so broad CLI tests can't hide weak core unit tests.
+  - `main()` is left empty until step 3.x; cargo-mutants generates no mutants for an empty `()` function.
+- Open:
+  - `SPEC.md` section 11, step 0.1 row has stray text ("This is done") that renders as an extra column.
+- For the next step:
+  - Local toolchain: cargo/rustc 1.98.1, cargo-mutants 27.1.0. Edition 2024 needs Rust ≥ 1.85 on CI runners.
+  - `Cargo.lock` is committed (the workspace ships a binary).
 
 <!--
 ### Step X.Y — Name (YYYY-MM-DD)
