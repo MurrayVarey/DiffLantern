@@ -1,2 +1,2 @@
-# PRLantern
-Get live information about your upcoming pull request
+# DiffLantern
+Get live diff information about your upcoming pull request
