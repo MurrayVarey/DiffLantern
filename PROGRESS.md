@@ -5,7 +5,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 **Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step
 
-**Next step:** 1.3
+**Next step:** 1.4
 
 ## Phase 0: Setup (owner)
 
@@ -22,7 +22,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 |---|---|---|---|
 | 1.1 | Cargo workspace (core library + CLI) with one trivial test | ✅ | |
 | 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ✅ | |
-| 1.3 | Mutation testing in CI | ⬜ | |
+| 1.3 | Mutation testing in CI | ✅ | |
 | 1.4 | Red-then-green commit check in CI | ⬜ | |
 | 1.5 | Git runner | ⬜ | |
 | 1.6 | Git version check | ⬜ | |
@@ -71,6 +71,20 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.3 — Mutation testing in CI (2026-09-29)
+- Decisions:
+  - Separate workflow, `.github/workflows/mutants.yml`, so the `Check (<os>)` job names from 1.2 are unchanged. Job name is `Mutants (diff)` on PRs and `Mutants (full)` on nightly (03:00 UTC) and manual (`workflow_dispatch`) runs.
+  - Linux only: mutation results shouldn't depend on the OS, and `ci.yml` already covers all three.
+  - cargo-mutants 27.1.0 is installed with `cargo install --locked` (no third-party action; costs a few minutes per run). If that gets annoying, cache the binary with GitHub's `actions/cache`.
+  - PR diff is `git diff origin/<base>...HEAD` on a full-history checkout. The base branch name is passed through an env var, not inlined into the script.
+  - Any missed or timed-out mutant fails the job (cargo-mutants exit code 2/3). `mutants.out/` is uploaded as an artifact on every run, pass or fail.
+- Open:
+  - Only confirmed locally (empty diff, non-Rust diff, caught and missed mutants). It still needs to be seen running on the PR; the nightly and manual runs can only be checked once this is on `main`.
+  - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
+  - The SPEC.md stray text from step 1.1 is still there.
+- For the next step:
+  - 1.4 needs the PR's commit list, so it will also need `fetch-depth: 0` (as here).
 
 ### Step 1.2 — CI (2026-09-29)
 - Decisions:
