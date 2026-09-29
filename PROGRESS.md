@@ -3,7 +3,7 @@
 Tracks the implementation steps in SPEC.md section 11.
 Updated in the final commit of each step, so `main` only ever shows merged work.
 
-**Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step
+**Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step · 🚫 Dropped
 
 **Next step:** 1.5
 
@@ -23,7 +23,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | 1.1 | Cargo workspace (core library + CLI) with one trivial test | ✅ | |
 | 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ✅ | |
 | 1.3 | Mutation testing in CI | ✅ | |
-| 1.4 | Red-then-green commit check in CI | ✅ | |
+| 1.4 | Red-then-green commit check in CI | 🚫 | |
 | 1.5 | Git runner | ⬜ | |
 | 1.6 | Git version check | ⬜ | |
 | 1.7 | `TestRepo` helper | ⬜ | |
@@ -72,21 +72,17 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
 
-### Step 1.4 — Red-then-green check (2026-09-29)
+### Step 1.4 — Red-then-green check: dropped (2026-09-29)
 - Decisions:
-  - New workflow `.github/workflows/red-green.yml`, job `Red-then-green`, on pull requests, Linux only. The logic is in `.github/scripts/red-green.sh <base-ref>` so it can be run locally too.
-  - The job checks out the PR head (not GitHub's merge commit) with full history, and walks `origin/<base>..HEAD` oldest first.
-  - The first commit whose subject starts with `test:` (or `test(scope):`) must fail `cargo test --locked`. A compile error counts as failing. Later `test:` commits (e.g. tests for surviving mutants) may pass. The PR head must pass.
-  - A PR that changes no `.rs` file is skipped (CI, docs, config). A PR that changes `.rs` files but has no `test:` commit fails the job.
-  - The script refuses to run on a dirty working tree and returns to the starting branch or commit when done.
+  - A CI check was built (first `test:` commit must fail `cargo test`, PR head must pass, PRs without `.rs` changes skipped), then removed before merging. Both commits are kept on the branch for the record.
+  - Why dropped: it was easy to game (a `test:` commit can fail for a trivial reason) and easy to trip by accident (tests and code in one commit). Mutation testing (step 1.3) already catches tests that can't fail, which is the real risk.
+  - Tests-first stays a working habit: commit tests on their own and confirm locally that they fail. The PR description's "Tests failed before implementation" line records it, and the reviewer can check the commits.
+  - SPEC.md §10 and §11 and CLAUDE.md updated to match; step 1.4 kept in the table as dropped so step numbers don't shift.
 - Open:
-  - Only confirmed locally, against throwaway branches: good pair, passing tests commit, no tests commit, docs only, failing head, dirty tree, detached start. This PR itself only exercises the skip path; the others first run in CI on step 1.5.
-  - `--locked` at the tests commit means a stale `Cargo.lock` there would count as "red" for the wrong reason. The job log shows the real failure.
-  - A `fix:` or `refactor:` PR that touches `.rs` without new tests will be flagged. That's probably right for `fix:`; a pure refactor would need a decision.
-  - Not yet decided whether `Red-then-green` (and `Mutants (diff)`) should be required status checks on `main`.
+  - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
   - The SPEC.md stray text from step 1.1 is still there.
 - For the next step:
-  - 1.5 is the first step this check applies to: commit the tests alone as `test: ...` before the `feat:` commit.
+  - Nothing from this step. 1.5 follows the normal loop.
 
 ### Step 1.3 — Mutation testing in CI (2026-09-29)
 - Decisions:
