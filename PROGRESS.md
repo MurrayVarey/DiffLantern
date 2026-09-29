@@ -79,6 +79,7 @@ Newest first. One entry per completed step: decisions made, anything left open, 
   - cargo-mutants 27.1.0 is installed with `cargo install --locked` (no third-party action; costs a few minutes per run). If that gets annoying, cache the binary with GitHub's `actions/cache`.
   - PR diff is `git diff origin/<base>...HEAD` on a full-history checkout. The base branch name is passed through an env var, not inlined into the script.
   - Any missed or timed-out mutant fails the job (cargo-mutants exit code 2/3). `mutants.out/` is uploaded as an artifact on every run, pass or fail.
+  - Each mode names its events (`pull_request` → diff; `schedule`/`workflow_dispatch` → full). Any other event fails the job, so adding a trigger forces a decision about which mode it gets.
 - Open:
   - Only confirmed locally (empty diff, non-Rust diff, caught and missed mutants). It still needs to be seen running on the PR; the nightly and manual runs can only be checked once this is on `main`.
   - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
