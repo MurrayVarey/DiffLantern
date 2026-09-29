@@ -1,0 +1,58 @@
+name: Mutants
+
+on:
+  pull_request:
+  schedule:
+    # Nightly full run at 03:00 UTC.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_MUTANTS_VERSION: 27.1.0
+
+jobs:
+  mutants:
+    # PRs test only the changed code; nightly and manual runs test everything.
+    name: Mutants (${{ github.event_name == 'pull_request' && 'diff' || 'full' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history, so the PR diff can be taken against the base branch.
+          fetch-depth: 0
+
+      - name: Install Rust (stable)
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustc --version
+          cargo --version
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --locked --version "$CARGO_MUTANTS_VERSION"
+
+      - name: Mutants on PR diff
+        if: github.event_name == 'pull_request'
+        env:
+          # Passed via env, not inlined, so a branch name can't inject shell code.
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff --no-ext-diff --no-textconv "origin/$BASE_REF...HEAD" > pr.diff
+          cargo mutants --in-diff pr.diff --cargo-arg=--locked
+
+      - name: Mutants on whole workspace
+        if: github.event_name != 'pull_request'
+        run: cargo mutants --cargo-arg=--locked
+
+      - name: Upload mutants report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-out
+          path: mutants.out
+          if-no-files-found: ignore
