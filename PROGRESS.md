@@ -5,7 +5,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 **Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step
 
-**Next step:** 1.2
+**Next step:** 1.3
 
 ## Phase 0: Setup (owner)
 
@@ -21,7 +21,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | Step | Name | Status | PR |
 |---|---|---|---|
 | 1.1 | Cargo workspace (core library + CLI) with one trivial test | ✅ | |
-| 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ⬜ | |
+| 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ✅ | |
 | 1.3 | Mutation testing in CI | ⬜ | |
 | 1.4 | Red-then-green commit check in CI | ⬜ | |
 | 1.5 | Git runner | ⬜ | |
@@ -71,6 +71,18 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.2 — CI (2026-09-29)
+- Decisions:
+  - One workflow, `.github/workflows/ci.yml`, runs on every pull request and on pushes to `main`. A matrix job runs on `windows-latest`, `ubuntu-latest` and `macos-latest` with `fail-fast: false`, so every OS reports.
+  - Rust comes from the runners' preinstalled `rustup` (latest `stable`, minimal profile plus rustfmt and clippy). The only third-party action is GitHub's own `actions/checkout`. The toolchain isn't pinned and there's no build caching.
+  - Clippy and tests run with `--locked`, so a stale `Cargo.lock` fails CI. The workflow token is read-only (`contents: read`).
+- Open:
+  - This step is done only once all three runners are green on the PR. That's checked there, not locally.
+  - An unpinned `stable` means a new Rust release could bring new clippy lints that fail CI without any code change. If that happens, consider a `rust-toolchain.toml`.
+  - The SPEC.md stray text from step 1.1 is still there.
+- For the next step:
+  - Add mutation testing as a separate job or workflow. The job name `Check (<os>)` may be referenced by branch-protection rules.
 
 ### Step 1.1 — Cargo workspace (2026-09-28)
 - Decisions:
