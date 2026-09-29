@@ -17,10 +17,22 @@ env:
 jobs:
   mutants:
     # PRs test only the changed code; nightly and manual runs test everything.
-    name: Mutants (${{ github.event_name == 'pull_request' && 'diff' || 'full' }})
+    # Each event is named explicitly, so a new trigger can't silently pick a mode.
+    name: Mutants (${{ github.event_name == 'pull_request' && 'diff' || (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'full' || 'unsupported' }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Reject unsupported event
+        if: >-
+          github.event_name != 'pull_request' &&
+          github.event_name != 'schedule' &&
+          github.event_name != 'workflow_dispatch'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "::error::Mutants workflow has no mode for event '$EVENT_NAME'. Add it to mutants.yml explicitly."
+          exit 1
+
       - uses: actions/checkout@v4
         with:
           # Full history, so the PR diff can be taken against the base branch.
@@ -46,7 +58,7 @@ jobs:
           cargo mutants --in-diff pr.diff --cargo-arg=--locked
 
       - name: Mutants on whole workspace
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: cargo mutants --cargo-arg=--locked
 
       - name: Upload mutants report
