@@ -214,7 +214,7 @@ Base is `main` unless stated. Each scenario becomes one test, named descriptivel
 
 ### The loop for every step
 1. Confirm the step's scenarios (section 8) are right.
-2. Write the tests. Commit them on their own; CI shows them **failing**.
+2. Write the tests. Commit them on their own and confirm they **fail** for the expected reason.
 3. Write the implementation. Commit; CI shows them **passing**.
 4. Run `cargo-mutants` on the change. For each surviving mutant, add an English scenario first, then a test.
 5. Open a PR (under the line limit). Review it, optionally with a fresh Claude session as a second reviewer. Merge.
@@ -222,7 +222,6 @@ Base is `main` unless stated. Each scenario becomes one test, named descriptivel
 ### Enforced by GitHub, not by instructions
 - **Branch protection on `main`:** no direct pushes; passing checks and owner approval required.
 - **CODEOWNERS:** owner review required for `SPEC.md`, test scenarios, the `TestRepo` helper, `.github/workflows/` and mutation config.
-- **Red-then-green check:** CI verifies the tests-only commit fails and the implementation commit passes.
 - **Skip markers:** any new `#[mutants::skip]` needs a written justification in the PR.
 
 ## 11. Implementation steps
@@ -243,7 +242,7 @@ Each step is one small PR. **Done when** means all its checks pass in CI on Wind
 | 1.1 | Cargo workspace: `difflantern-core` (library), `difflantern` (CLI); one trivial test | `cargo test` passes locally |
 | 1.2 | CI: format check, clippy and tests on Windows, Linux and macOS | All three runners green |
 | 1.3 | Mutation testing in CI (`--in-diff` on PRs, nightly full run) | Job runs and reports |
-| 1.4 | Red-then-green commit check in CI | A PR without a failing tests commit is flagged |
+| 1.4 | ~~Red-then-green commit check in CI~~ Dropped: mutation testing covers test strength; tests-first is a working habit, not a CI check | — |
 | 1.5 | Git runner: run git, return stdout, stderr and exit code | Test runs `git --version` |
 | 1.6 | Git version check (≥ 2.30): pure parser plus fake-git tests | git missing and too-old scenarios pass |
 | 1.7 | `TestRepo` helper with self-verifying actions and isolated config | Helper's own tests pass |

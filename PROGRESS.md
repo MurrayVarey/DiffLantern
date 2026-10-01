@@ -3,9 +3,9 @@
 Tracks the implementation steps in SPEC.md section 11.
 Updated in the final commit of each step, so `main` only ever shows merged work.
 
-**Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step
+**Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step · 🚫 Dropped
 
-**Next step:** 1.4
+**Next step:** 1.5
 
 ## Phase 0: Setup (owner)
 
@@ -23,7 +23,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | 1.1 | Cargo workspace (core library + CLI) with one trivial test | ✅ | |
 | 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ✅ | |
 | 1.3 | Mutation testing in CI | ✅ | |
-| 1.4 | Red-then-green commit check in CI | ⬜ | |
+| 1.4 | Red-then-green commit check in CI | 🚫 | |
 | 1.5 | Git runner | ⬜ | |
 | 1.6 | Git version check | ⬜ | |
 | 1.7 | `TestRepo` helper | ⬜ | |
@@ -71,6 +71,18 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.4 — Red-then-green check: dropped (2026-09-29)
+- Decisions:
+  - A CI check was built (first `test:` commit must fail `cargo test`, PR head must pass, PRs without `.rs` changes skipped), then removed before merging. Both commits are kept on the branch for the record.
+  - Why dropped: it was easy to game (a `test:` commit can fail for a trivial reason) and easy to trip by accident (tests and code in one commit). Mutation testing (step 1.3) already catches tests that can't fail, which is the real risk.
+  - Tests-first stays a working habit: commit tests on their own and confirm locally that they fail. The PR description's "Tests failed before implementation" line records it, and the reviewer can check the commits.
+  - SPEC.md §10 and §11 and CLAUDE.md updated to match; step 1.4 kept in the table as dropped so step numbers don't shift.
+- Open:
+  - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
+  - The SPEC.md stray text from step 1.1 is still there.
+- For the next step:
+  - Nothing from this step. 1.5 follows the normal loop.
 
 ### Step 1.3 — Mutation testing in CI (2026-09-29)
 - Decisions:

@@ -40,7 +40,7 @@ Changes to these must be called out at the top of the PR description.
 - One branch per step: `step/<number>-<short-name>`, e.g. `step/2.1-numstat-parser`.
 - Before creating a branch, start from the latest `main`: run `git switch main`, then `git pull --ff-only`. Stop and ask if the working tree isn't clean, the pull fails, or anything else is unexpected.
 - Small commits with conventional prefixes: `test:`, `feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`.
-- Keep the tests-only commit separate from the implementation commit, so CI can verify red-then-green.
+- Keep the tests-only commit separate from the implementation commit, so the reviewer can see the tests were written first.
 
 ## Checks (all must pass before a PR)
 
