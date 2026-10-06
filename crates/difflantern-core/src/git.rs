@@ -3,6 +3,7 @@
 
 use std::io;
 use std::path::Path;
+use std::process::Command;
 
 /// What one git command produced.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -24,8 +25,15 @@ pub trait GitRunner {
 pub struct SystemGit;
 
 impl GitRunner for SystemGit {
-    fn run(&self, _dir: &Path, _args: &[&str]) -> io::Result<GitOutput> {
-        todo!()
+    fn run(&self, dir: &Path, args: &[&str]) -> io::Result<GitOutput> {
+        // No shell: each argument reaches git exactly as given. `output()`
+        // captures stdout and stderr and gives git no stdin.
+        let output = Command::new("git").args(args).current_dir(dir).output()?;
+        Ok(GitOutput {
+            stdout: output.stdout,
+            stderr: output.stderr,
+            code: output.status.code(),
+        })
     }
 }
 
