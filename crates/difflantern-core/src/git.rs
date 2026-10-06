@@ -73,4 +73,17 @@ mod git_runner {
             String::from_utf8_lossy(&out.stderr)
         );
     }
+
+    // An argument containing spaces, quotes and shell characters reaches git
+    // as one unchanged argument: no shell splits or interprets it.
+    #[test]
+    fn argument_with_shell_characters_reaches_git_unchanged() {
+        let arg = r#"a b;c|d&e $HOME %PATH% "q" \x"#;
+        let out = SystemGit
+            .run(&std::env::temp_dir(), &["rev-parse", "--sq-quote", arg])
+            .expect("git should start");
+        assert_eq!(out.code, Some(0));
+        // `--sq-quote` echoes each argument back as one single-quoted word.
+        assert_eq!(String::from_utf8_lossy(&out.stdout), format!(" '{arg}'\n"));
+    }
 }
