@@ -5,7 +5,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 **Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step · 🚫 Dropped
 
-**Next step:** 1.5
+**Next step:** 1.6
 
 ## Phase 0: Setup (owner)
 
@@ -24,7 +24,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | 1.2 | CI: format, clippy, tests on Windows, Linux, macOS | ✅ | |
 | 1.3 | Mutation testing in CI | ✅ | |
 | 1.4 | Red-then-green commit check in CI | 🚫 | |
-| 1.5 | Git runner | ⬜ | |
+| 1.5 | Git runner | ✅ | |
 | 1.6 | Git version check | ⬜ | |
 | 1.7 | `TestRepo` helper | ⬜ | |
 
@@ -71,6 +71,22 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.5 — Git runner (2026-10-06)
+- Decisions:
+  - The runner is a `git` module inside `difflantern-core`, not a separate crate, so its tests and later core tests stay in the core crate (see 1.1). It is the only part of core that does I/O; the crate doc says so.
+  - `GitRunner` trait: `run(dir, args) -> io::Result<GitOutput>`. `SystemGit` is the real one, using `std::process::Command` (no shell, no stdin).
+  - `GitOutput` keeps stdout and stderr as raw bytes, because `-z` output and file names need not be UTF-8. `code` is `None` if git was killed by a signal.
+  - `Err` means only "git could not be started". A non-zero exit is a normal `Ok` result for the caller to judge.
+- Open:
+  - cargo-mutants found no viable mutants here (its only mutant needs `Default` on `GitOutput`). Three mutations applied by hand (exit code forced to 0, stdout/stderr swapped, args dropped) were all caught.
+  - The "shell characters reach git unchanged" test was added after the implementation, so it couldn't fail first. It was checked against two broken runners instead (one splitting arguments on spaces, one going through `cmd /C`), and both failed it.
+  - The `dir` argument isn't tested yet. `TestRepo` (1.7) will exercise it.
+  - Arguments are `&str`. If a later step needs to pass non-UTF-8 paths, this will need to become `OsStr`.
+  - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
+  - The SPEC.md stray text from step 1.1 is still there.
+- For the next step:
+  - 1.6 should take the runner as a parameter and use a fake that returns an `io::Error` with kind `NotFound` for "git missing", and canned `git version …` stdout for "too old".
 
 ### Step 1.4 — Red-then-green check: dropped (2026-09-29)
 - Decisions:
