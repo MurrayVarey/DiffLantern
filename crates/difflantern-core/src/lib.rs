@@ -1,4 +1,8 @@
-//! Pure core of DiffLantern: parsing, counting, status and formatting.
+//! Core of DiffLantern: parsing, counting, status and formatting.
+//!
+//! Everything here is pure except the [`git`] module, which runs git.
+
+pub mod git;
 
 /// The product name.
 pub fn name() -> &'static str {
