@@ -106,7 +106,7 @@ pub fn check_git_version(
 }
 
 #[cfg(test)]
-mod git_version {
+mod tests {
     use super::*;
     use crate::git::GitOutput;
     use std::io;
