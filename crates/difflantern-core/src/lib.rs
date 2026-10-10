@@ -3,6 +3,7 @@
 //! Everything here is pure except the [`git`] module, which runs git.
 
 pub mod git;
+pub mod version;
 
 /// The product name.
 pub fn name() -> &'static str {
