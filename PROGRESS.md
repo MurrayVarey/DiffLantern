@@ -5,7 +5,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 
 **Status key:** ⬜ Not started · 🟨 In progress · ✅ Done · ⏭️ Merged into another step · 🚫 Dropped
 
-**Next step:** 1.6
+**Next step:** 1.7
 
 ## Phase 0: Setup (owner)
 
@@ -25,7 +25,7 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 | 1.3 | Mutation testing in CI | ✅ | |
 | 1.4 | Red-then-green commit check in CI | 🚫 | |
 | 1.5 | Git runner | ✅ | |
-| 1.6 | Git version check | ⬜ | |
+| 1.6 | Git version check | ✅ | |
 | 1.7 | `TestRepo` helper | ⬜ | |
 
 ## Phase 2: Core
@@ -71,6 +71,21 @@ Updated in the final commit of each step, so `main` only ever shows merged work.
 ## Handover notes
 
 Newest first. One entry per completed step: decisions made, anything left open, and anything the next step needs to know.
+
+### Step 1.6 — Git version check (2026-10-10)
+- Decisions:
+  - New `version` module in `difflantern-core`, separate from `git`, so the runner module stays the only one that starts processes. It has a pure `version_from_output(stdout)` (parse plus minimum check) and `check_git_version(runner, dir)`, which runs `git --version` through the runner it is given.
+  - `GitVersion { major, minor, patch }` with derived ordering (field order = release order). Minimum is `MINIMUM_GIT` = 2.30.0. All three numbers are required; anything after them (`.windows.1`, ` (Apple Git-146)`) is ignored.
+  - `GitVersionError` has four variants: `Missing`, `Failed { code }`, `Unreadable`, `TooOld { found }`. Each has a plain-English `Display` message. Mapping errors to exit code 2 is left to step 3.4.
+  - Any failure to start git (not just `NotFound`) is reported as `Missing`, as the SPEC scenario says ("git can't be started → git wasn't found").
+  - The errors carry no text from git's stdout or stderr, so there's nothing to strip control characters from yet.
+  - SPEC.md: added a "Git version" scenario section in §8 and removed the stray "This is done" text from §11 (approved by the owner).
+- Open:
+  - The `Failed { code: None }` message (git ended by a signal) isn't tested; a real or fake signal case didn't seem worth adding. cargo-mutants didn't generate a mutant for it.
+  - Not yet decided whether `Mutants (diff)` should be a required status check on `main`.
+- For the next step:
+  - 1.7 (`TestRepo`) can use `SystemGit` directly. The runner's `dir` argument is still untested and will be exercised there.
+  - The glue (later steps) should call `check_git_version` once before running any other git command.
 
 ### Step 1.5 — Git runner (2026-10-06)
 - Decisions:
