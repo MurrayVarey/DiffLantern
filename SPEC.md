@@ -186,6 +186,18 @@ Base is `main` unless stated. Each scenario becomes one test, named descriptivel
 - Run outside a git repo → error, exit code 2
 - git missing, or older than 2.30 → clear error, exit code 2 (tested with a fake)
 
+### Git version
+- `git version 2.30.0` → accepted (exactly the minimum)
+- `git version 2.29.9` → too old; the error reports the version found
+- `git version 2.43.0.windows.1` → accepted (Windows build suffix)
+- `git version 2.39.3 (Apple Git-146)` → accepted (macOS suffix)
+- `git version 3.0.0` → accepted (a higher major version beats a lower minor)
+- Output that isn't a git version line (empty or garbage) → error saying the git version couldn't be read
+- git can't be started → error saying git wasn't found (tested with a fake)
+- git reports 2.29.0 → error naming 2.29.0 and the 2.30 minimum (tested with a fake)
+- git reports 2.30.0 → accepted (tested with a fake)
+- `git --version` exits with a non-zero code → error saying git failed (tested with a fake)
+
 ### Output
 - Human output shows `+adds −dels`, total/limit, a progress bar and `vs <base>`
 - Total 210, limit 400 → bar only, no "left" or "over"
@@ -231,7 +243,7 @@ Each step is one small PR. **Done when** means all its checks pass in CI on Wind
 ### Phase 0: Setup
 | Step | Goal | Done when |
 |---|---|---|
-| 0.1 | Rename repo to DiffLantern; update local remote | `git remote -v` shows the new URL | This is done
+| 0.1 | Rename repo to DiffLantern; update local remote | `git remote -v` shows the new URL |
 | 0.2 | Install Rust (`rustup`, `rustfmt`, `clippy`) on Windows and Linux | `cargo --version` works on both |
 | 0.3 | Add `README.md`, `SPEC.md`, `CLAUDE.md` (workflow instructions) | Merged via PR |
 | 0.4 | Branch protection on `main` and CODEOWNERS | A direct push to `main` is rejected |

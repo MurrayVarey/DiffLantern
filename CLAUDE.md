@@ -37,6 +37,7 @@ Changes to these must be called out at the top of the PR description.
 
 - **Commit locally only. Never push and never open PRs.** The owner reviews the commits, pushes and opens the PR.
 - Never commit to `main`. Never rewrite history that has been pushed.
+- After handover, add any changes as new commits on top of the branch. Never reorder, amend or reset existing commits. If `PROGRESS.md` needs updating, add a follow-up `docs:` commit.
 - One branch per step: `step/<number>-<short-name>`, e.g. `step/2.1-numstat-parser`.
 - Before creating a branch, start from the latest `main`: run `git switch main`, then `git pull --ff-only`. Stop and ask if the working tree isn't clean, the pull fails, or anything else is unexpected.
 - Small commits with conventional prefixes: `test:`, `feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`.
