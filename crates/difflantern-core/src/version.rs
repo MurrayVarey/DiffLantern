@@ -22,8 +22,8 @@ pub const MINIMUM_GIT: GitVersion = GitVersion {
 };
 
 impl fmt::Display for GitVersion {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!()
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
 }
 
@@ -41,23 +41,68 @@ pub enum GitVersionError {
 }
 
 impl fmt::Display for GitVersionError {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!()
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let minimum = format!("{}.{}", MINIMUM_GIT.major, MINIMUM_GIT.minor);
+        match self {
+            GitVersionError::Missing => write!(
+                f,
+                "git was not found; DiffLantern needs git {minimum} or later on PATH"
+            ),
+            GitVersionError::Failed { code: Some(code) } => {
+                write!(f, "`git --version` failed with exit code {code}")
+            }
+            GitVersionError::Failed { code: None } => {
+                write!(f, "`git --version` failed: git was stopped by a signal")
+            }
+            GitVersionError::Unreadable => {
+                write!(f, "could not read the git version from `git --version`")
+            }
+            GitVersionError::TooOld { found } => write!(
+                f,
+                "git {found} is too old; DiffLantern needs git {minimum} or later"
+            ),
+        }
     }
 }
 
 /// Reads the output of `git --version` and accepts it if git is new enough.
 /// Pure: takes git's stdout, runs nothing.
-pub fn version_from_output(_stdout: &[u8]) -> Result<GitVersion, GitVersionError> {
-    todo!()
+pub fn version_from_output(stdout: &[u8]) -> Result<GitVersion, GitVersionError> {
+    let found = parse_version_line(stdout).ok_or(GitVersionError::Unreadable)?;
+    if found < MINIMUM_GIT {
+        return Err(GitVersionError::TooOld { found });
+    }
+    Ok(found)
+}
+
+/// Parses `git version X.Y.Z`, ignoring anything after the three numbers
+/// (e.g. `.windows.1` or ` (Apple Git-146)`).
+fn parse_version_line(stdout: &[u8]) -> Option<GitVersion> {
+    let text = std::str::from_utf8(stdout).ok()?;
+    let release = text
+        .strip_prefix("git version ")?
+        .split_whitespace()
+        .next()?;
+    let mut numbers = release.split('.').map(|part| part.parse::<u32>().ok());
+    Some(GitVersion {
+        major: numbers.next()??,
+        minor: numbers.next()??,
+        patch: numbers.next()??,
+    })
 }
 
 /// Runs `git --version` in `dir` and checks that git is new enough.
 pub fn check_git_version(
-    _runner: &impl GitRunner,
-    _dir: &Path,
+    runner: &impl GitRunner,
+    dir: &Path,
 ) -> Result<GitVersion, GitVersionError> {
-    todo!()
+    let output = runner
+        .run(dir, &["--version"])
+        .map_err(|_| GitVersionError::Missing)?;
+    if output.code != Some(0) {
+        return Err(GitVersionError::Failed { code: output.code });
+    }
+    version_from_output(&output.stdout)
 }
 
 #[cfg(test)]
